@@ -28,9 +28,8 @@ func main() {
 	// v1 := mergeSort(slice)
 	// fmt.Println("  -> traditional ------ secs: ", time.Since(start).Seconds())
 	// fmt.Println("--- Sorted -----------------------", v1)
-	chan1 := make(chan []int, 1)
 	start1 := time.Now()
-	v2 := mergeSortGo(slice, chan1)
+	v2 := mergeSortGo(slice)
 	fmt.Println("  -> mergeSortGo ------ secs: ", time.Since(start1).Seconds())
 	fmt.Println("--- Sorted with mergeSortGo ------", v2)
 }
@@ -50,20 +49,27 @@ func generateSlice(size int) []int {
 // mergeSortGo: usa facilidades de slices (so isso!)
 // SE VOCE NAO ENTENDE SLICES, VEJA NA PARTE DE GO BASICO O CONTEUDO E REFERENCIAS
 
-func mergeSortGo(s []int, c chan []int) []int {
+func mergeSortGo(s []int) []int {
 	if len(s) > 1 {
 		middle := len(s) / 2
-		// cria canais
-		chan1 := make(chan []int, 1)
-		chan2 := make(chan []int, 1)
-		// cria processo concorrentes
-		go mergeSortGo(s[:middle], chan1)
-		go mergeSortGo(s[middle:], chan2)
-		// le dos canais
-		val1 := <-chan1
-		val2 := <-chan2
-		// faz o merge do resultado
-		return merge(val1, val2)
+		var s1 []int
+		var s2 []int
+
+		c := make(chan struct{}, 2)
+
+		go func() {
+			s1 = mergeSortGo(s[middle:])
+			c <- struct{}{}
+		}()
+
+		go func() {
+			s2 = mergeSortGo(s[:middle])
+			c <- struct{}{}
+		}()
+
+		<-c
+		<-c
+		return merge(s1, s2)
 	}
 	return s
 }
