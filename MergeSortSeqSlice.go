@@ -28,9 +28,9 @@ func main() {
 	// v1 := mergeSort(slice)
 	// fmt.Println("  -> traditional ------ secs: ", time.Since(start).Seconds())
 	// fmt.Println("--- Sorted -----------------------", v1)
-
+	chan1 := make(chan []int, 1)
 	start1 := time.Now()
-	v2 := mergeSortGo(slice)
+	v2 := mergeSortGo(slice, chan1)
 	fmt.Println("  -> mergeSortGo ------ secs: ", time.Since(start1).Seconds())
 	fmt.Println("--- Sorted with mergeSortGo ------", v2)
 }
