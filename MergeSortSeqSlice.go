@@ -24,10 +24,10 @@ func main() {
 
 	fmt.Println("-Unsorted - ", slice)
 
-	// start := time.Now()
-	// v1 := mergeSort(slice)
-	// fmt.Println("  -> traditional ------ secs: ", time.Since(start).Seconds())
-	// fmt.Println("--- Sorted -----------------------", v1)
+	start := time.Now()
+	v1 := mergeSort(slice)
+	fmt.Println("  -> traditional ------ secs: ", time.Since(start).Seconds())
+	fmt.Println("--- Sorted -----------------------", v1)
 	start1 := time.Now()
 	v2 := mergeSortGo(slice)
 	fmt.Println("  -> mergeSortGo ------ secs: ", time.Since(start1).Seconds())
@@ -52,23 +52,27 @@ func generateSlice(size int) []int {
 func mergeSortGo(s []int) []int {
 	if len(s) > 1 {
 		middle := len(s) / 2
+
+		//criamos os vetores que guardarao os resultados dos processos concorrentes
 		var s1 []int
 		var s2 []int
 
+		//criamos o canal
 		c := make(chan struct{}, 2)
 
+		//criamos um processo concorrente para cada metade do vetor
 		go func() {
 			s1 = mergeSortGo(s[middle:])
-			c <- struct{}{}
+			c <- struct{}{} //escreve no canal
 		}()
 
 		go func() {
 			s2 = mergeSortGo(s[:middle])
-			c <- struct{}{}
+			c <- struct{}{} //escreve no canal
 		}()
 
-		<-c
-		<-c
+		<-c //le do canal
+		<-c //le do canal
 		return merge(s1, s2)
 	}
 	return s
@@ -103,25 +107,24 @@ func merge(left, right []int) (result []int) {
 
 // ---------------------------------------------------------------------
 // mergeSort: uma implementacao tradicional
-// func mergeSort(items []int) []int {
-// 	var num = len(items)
+func mergeSort(items []int) []int {
+	var num = len(items)
 
-// 	if num == 1 {
-// 		return items
-// 	}
+	if num == 1 {
+		return items
+	}
 
-// 	middle := int(num / 2)
-// 	var (
-// 		left  = make([]int, middle)
-// 		right = make([]int, num-middle)
-// 	)
-// 	for i := 0; i < num; i++ {
-// 		if i < middle {
-// 			left[i] = items[i]
-// 		} else {
-// 			right[i-middle] = items[i]
-// 		}
-// 	}
-
-// 	return merge(mergeSort(left), mergeSort(right))
-// }
+	middle := int(num / 2)
+	var (
+		left  = make([]int, middle)
+		right = make([]int, num-middle)
+	)
+	for i := 0; i < num; i++ {
+		if i < middle {
+			left[i] = items[i]
+		} else {
+			right[i-middle] = items[i]
+		}
+	}
+	return merge(mergeSort(left), mergeSort(right))
+}
